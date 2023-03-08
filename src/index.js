@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import nodeMailer from "nodemailer";
 import bodyParser from "body-parser";
+import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -11,11 +12,19 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 app.post("/send-mail", upload.single("attachment"), async function (req, res) {
-  const { mail, subject } = req.body;
+  const { mail, subject, body } = req.body;
   let attachment = null;
   if (req.file) {
     attachment = {
@@ -39,24 +48,24 @@ app.post("/send-mail", upload.single("attachment"), async function (req, res) {
         rejectUnauthorized: false,
       },
     });
-    let content = "";
-    content += `
-        <div style="padding: 10px; background-color: #5D9C59">
-            <div style="padding: 10px; background-color: white;">
-                <span style="color: black">File export</span>
-            </div>
-        </div>
-    `;
+
     const mainOptions = {
       from: process.env.MAIL_FROM || "caoduc4work@gmail.com",
       to: req.body.mail,
       subject: subject,
       attachments: attachment,
       // text: "Files export",
-      html: content,
+      html: body,
     };
     await transporter.sendMail(mainOptions);
     res.status(200).json({ message: "Send mail success" });
+    fs.unlink(req.file.path, err => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("File removed: " + req.file.path);
+      }
+    });
   } catch (error) {
     console.log("error send mail: ", error);
     res.status(500).json({ message: "Send mail fail" });
