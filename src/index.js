@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3100;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -40,8 +40,8 @@ app.post("/send-mail", upload.single("attachment"), async function (req, res) {
       port: process.env.MAIL_PORT || 465,
       secure: true,
       auth: {
-        user: process.env.MAIL_FROM || "caoduc4work@gmail.com",
-        pass: process.env.MAIL_PASS || "okfxfiaayvvqqfvi",
+        user: process.env.MAIL_FROM || "preschoolats@gmail.com",
+        pass: process.env.MAIL_PASS || "sjzqlmyuubaunzzg",
       },
       tls: {
         // do not fail on invalid certs
@@ -50,7 +50,7 @@ app.post("/send-mail", upload.single("attachment"), async function (req, res) {
     });
 
     const mainOptions = {
-      from: process.env.MAIL_FROM || "caoduc4work@gmail.com",
+      from: process.env.MAIL_FROM || "preschoolats@gmail.com",
       to: req.body.mail,
       subject: subject,
       attachments: attachment,
